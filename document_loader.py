@@ -18,7 +18,7 @@ from langchain_ollama import ChatOllama
 USE_LOCAL_EMBEDDINGS = True
 
 # # True -> delete the old chroma_db each run so chunks are not duplicated
-REBUILD_DB = True
+REBUILD_DB = False
 
 # # Variable name used inside your .env file, e.g.  HF_TOKEN=hf_xxxxx
 TOKEN_KEY = "HUGGINGFACEHUB_API_TOKEN"
@@ -165,20 +165,32 @@ llm = ChatOllama(
 # 6. Store embeddings and documents in ChromaDB
 # --------------------------------------------------
 
-if REBUILD_DB and CHROMA_DIR.exists():
-    shutil.rmtree(CHROMA_DIR)
+# --------------------------------------------------
+# 6. Create or load ChromaDB
+# --------------------------------------------------
 
-print("\nEmbedding chunks and storing them in ChromaDB...")
+if REBUILD_DB or not CHROMA_DIR.exists():
+    if CHROMA_DIR.exists():
+        shutil.rmtree(CHROMA_DIR)
 
+    print("\nCreating ChromaDB from PDF chunks...")
 
-vector_store = Chroma.from_documents(
-    documents=chunks,
-    embedding=embeddings,
-    collection_name="pdf_knowledge",
-    persist_directory=str(CHROMA_DIR),
-)
+    vector_store = Chroma.from_documents(
+        documents=chunks,
+        embedding=embeddings,
+        collection_name="pdf_knowledge",
+        persist_directory=str(CHROMA_DIR),
+    )
+else:
+    print("\nLoading existing ChromaDB...")
 
-print("PDF embeddings stored successfully!")
+    vector_store = Chroma(
+        collection_name="pdf_knowledge",
+        embedding_function=embeddings,
+        persist_directory=str(CHROMA_DIR),
+    )
+
+print("ChromaDB ready!")
 
 
 #using MMR and multiquery for better answer
@@ -190,17 +202,18 @@ retriever = MultiQueryRetriever.from_llm(
     retriever=mmr_retriever,
     llm=llm,
 )
-query = input("Ask me a question :")
-results= retriever.invoke(query)
+# --------------------------------------------------
+# 7. Interactive question answering
+# --------------------------------------------------
 
-results = results[:3]
+if __name__ == "__main__":
+    query = input("Ask me a question: ")
+    results = retriever.invoke(query)[:3]
 
+    for i, doc in enumerate(results, start=1):
+        page = doc.metadata.get("page")
+        page_label = page + 1 if isinstance(page, int) else "Unknown"
 
-for i, doc in enumerate(results, start=1):
-    page = doc.metadata.get("page")
-    page_label = page + 1 if isinstance(page, int) else "Unknown"  # pages are 0-indexed
-    print(f"\n--- Result {i} ---")
-    print(f"Page: {page_label}")
-    print(doc.page_content[:500])
-
-print("\nPDF ingestion and retrieval completed!")
+        print(f"\n--- Result {i} ---")
+        print(f"Page: {page_label}")
+        print(doc.page_content[:500])

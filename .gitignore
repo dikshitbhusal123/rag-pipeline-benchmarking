@@ -1,1 +1,9 @@
 .env
+.env.*
+.venv/
+__pycache__/
+*.py[cod]
+chroma_db/
+chroma_db_*/
+*.pdf
+*.csv
