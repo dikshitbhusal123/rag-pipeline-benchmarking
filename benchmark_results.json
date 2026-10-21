@@ -1,0 +1,20 @@
+[
+  {
+    "Method": "Similarity",
+    "Recall@2": 0.6,
+    "Hit@2": 0.6,
+    "Average latency (seconds)": 0.019034273799991296
+  },
+  {
+    "Method": "MMR",
+    "Recall@2": 0.6,
+    "Hit@2": 0.6,
+    "Average latency (seconds)": 0.023769821799987767
+  },
+  {
+    "Method": "MultiQuery + MMR",
+    "Recall@2": 0.4,
+    "Hit@2": 0.4,
+    "Average latency (seconds)": 3.654842010199991
+  }
+]

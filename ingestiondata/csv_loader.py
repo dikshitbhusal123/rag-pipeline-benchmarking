@@ -90,9 +90,9 @@ retriever = MultiQueryRetriever.from_llm(
     retriever=mmr_retriever,
     llm=llm,
 )
-# --------------------------------------------------
+
 # 7. Interactive question answering
-# --------------------------------------------------
+
 
 if __name__ == "__main__":
     query = input("Ask me a question: ")

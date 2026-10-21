@@ -7,3 +7,4 @@ chroma_db/
 chroma_db_*/
 *.pdf
 *.csv
+diagram_model/dataset/
